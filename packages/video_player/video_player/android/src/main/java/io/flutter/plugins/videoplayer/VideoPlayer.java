@@ -26,9 +26,15 @@ import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
+import com.google.android.exoplayer2.upstream.FileDataSource;
+import com.google.android.exoplayer2.upstream.cache.CacheDataSink;
+import com.google.android.exoplayer2.upstream.cache.CacheDataSource;
+import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor;
+import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
@@ -56,6 +62,50 @@ final class VideoPlayer {
 
   private boolean isInitialized = false;
 
+  private static SimpleCache sDownloadCache;
+
+  static class CacheDataSourceFactory implements DataSource.Factory {
+    private final Context context;
+    private final DefaultDataSourceFactory defaultDatasourceFactory;
+    private final long maxFileSize, maxCacheSize;
+
+    CacheDataSourceFactory(Context context, Map<String, String> httpHeaders, long maxCacheSize, long maxFileSize) {
+      super();
+      this.context = context;
+      this.maxCacheSize = maxCacheSize;
+      this.maxFileSize = maxFileSize;
+
+      DefaultBandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
+
+      DefaultHttpDataSourceFactory httpDataSourceFactory =
+              new DefaultHttpDataSourceFactory(
+                      "ExoPlayer",
+                      null,
+                      DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                      DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                      true);
+
+      if (httpHeaders != null) {
+        httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
+      }
+
+      defaultDatasourceFactory = new DefaultDataSourceFactory(this.context, bandwidthMeter, httpDataSourceFactory);
+    }
+
+    @Override
+    public DataSource createDataSource() {
+      LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
+
+      if (sDownloadCache == null) {
+        sDownloadCache = new SimpleCache(context.getCacheDir(),evictor);
+      }
+
+      return new CacheDataSource(sDownloadCache, defaultDatasourceFactory.createDataSource(), new FileDataSource(),
+              new CacheDataSink(sDownloadCache, maxFileSize),
+              CacheDataSource.FLAG_BLOCK_ON_CACHE | CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null);
+    }
+  }
+
   VideoPlayer(
       Context context,
       EventChannel eventChannel,
@@ -73,17 +123,7 @@ final class VideoPlayer {
 
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
-      dataSourceFactory =
-          new DefaultHttpDataSourceFactory(
-              "ExoPlayer",
-              null,
-              DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-              DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
-              true);
-
-      if (httpHeaders != null) {
-        httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
-      }
+      dataSourceFactory = new CacheDataSourceFactory(context, httpHeaders, 100 * 1024 * 1024, 5 * 1024 * 1024);
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }

@@ -4,6 +4,7 @@
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -215,7 +216,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   final String package;
 
 
-  Map<String, String> httpHeaders;
+  final Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
@@ -256,7 +257,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
-          httpHeaders: httpHeaders,
+          httpHeaders: json.encode(httpHeaders),
         );
         break;
       case DataSourceType.file:

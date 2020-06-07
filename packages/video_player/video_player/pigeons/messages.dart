@@ -24,6 +24,7 @@ class CreateMessage {
   String uri;
   String packageName;
   String formatHint;
+  String httpHeaders;
 }
 
 @HostApi()

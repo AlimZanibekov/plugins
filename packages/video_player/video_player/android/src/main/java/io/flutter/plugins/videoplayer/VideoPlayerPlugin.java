@@ -20,6 +20,12 @@ import io.flutter.plugins.videoplayer.Messages.VolumeMessage;
 import io.flutter.view.FlutterMain;
 import io.flutter.view.TextureRegistry;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /** Android platform implementation of the VideoPlayerPlugin. */
 public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
   private static final String TAG = "VideoPlayerPlugin";
@@ -117,13 +123,22 @@ public class VideoPlayerPlugin implements FlutterPlugin, VideoPlayerApi {
               null);
       videoPlayers.put(handle.id(), player);
     } else {
+      String headers = arg.getHttpHeaders();
+      Map<String, String> headersMap = null;
+
+      if (headers != null) {
+        headersMap = new Gson().fromJson(
+                headers, new TypeToken<HashMap<String, String>>() {}.getType()
+        );
+      }
+
       player =
           new VideoPlayer(
               flutterState.applicationContext,
               eventChannel,
               handle,
               arg.getUri(),
-              arg.getHttpHeaders(),
+              headersMap,
               arg.getFormatHint());
       videoPlayers.put(handle.id(), player);
     }

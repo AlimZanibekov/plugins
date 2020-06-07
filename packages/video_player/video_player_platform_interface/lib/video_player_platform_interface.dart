@@ -167,7 +167,7 @@ class DataSource {
   /// [DataSourceType.asset] videos.
   final String package;
 
-  final Map<String, String> httpHeaders;
+  final String httpHeaders;
 }
 
 /// The way in which the video was originally loaded.
