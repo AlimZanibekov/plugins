@@ -172,6 +172,7 @@ class DataSource {
   final String httpHeaders;
 
   final int maxCacheSize;
+
   final int maxFileSize;
 }
 
