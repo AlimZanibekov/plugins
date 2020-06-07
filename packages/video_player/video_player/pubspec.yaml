@@ -23,7 +23,7 @@ dependencies:
   video_player_platform_interface:
     git:
       url: https://github.com/AlimZanibekov/plugins.git
-      ref: add_videoplayer_http_headers
+      ref: add_videoplayer_cache
       path: packages/video_player/video_player_platform_interface
   # The design on https://flutter.dev/go/federated-plugins was to leave
   # this constraint as "any". We cannot do it right now as it fails pub publish
@@ -33,7 +33,7 @@ dependencies:
   video_player_web:
     git:
       url: https://github.com/AlimZanibekov/plugins.git
-      ref: add_videoplayer_http_headers
+      ref: add_videoplayer_cache
       path: packages/video_player/video_player_web
 
   flutter:
