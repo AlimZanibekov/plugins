@@ -13,14 +13,14 @@ import 'package:meta/meta.dart';
 
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 export 'package:video_player_platform_interface/video_player_platform_interface.dart'
-    show DurationRange, DataSourceType, VideoFormat;
+  show DurationRange, DataSourceType, VideoFormat;
 
 import 'src/closed_caption_file.dart';
 export 'src/closed_caption_file.dart';
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
-  // This will clear all open videos on the platform when a full restart is
-  // performed.
+// This will clear all open videos on the platform when a full restart is
+// performed.
   ..init();
 
 /// The duration, current position, buffering state, error state and settings
@@ -47,7 +47,7 @@ class VideoPlayerValue {
   /// Returns an instance with a `null` [Duration] and the given
   /// [errorDescription].
   VideoPlayerValue.erroneous(String errorDescription)
-      : this(duration: null, errorDescription: errorDescription);
+    : this(duration: null, errorDescription: errorDescription);
 
   /// The total duration of the video.
   ///
@@ -139,16 +139,16 @@ class VideoPlayerValue {
   @override
   String toString() {
     return '$runtimeType('
-        'duration: $duration, '
-        'size: $size, '
-        'position: $position, '
-        'caption: $caption, '
-        'buffered: [${buffered.join(', ')}], '
-        'isPlaying: $isPlaying, '
-        'isLooping: $isLooping, '
-        'isBuffering: $isBuffering'
-        'volume: $volume, '
-        'errorDescription: $errorDescription)';
+      'duration: $duration, '
+      'size: $size, '
+      'position: $position, '
+      'caption: $caption, '
+      'buffered: [${buffered.join(', ')}], '
+      'isPlaying: $isPlaying, '
+      'isLooping: $isLooping, '
+      'isBuffering: $isBuffering'
+      'volume: $volume, '
+      'errorDescription: $errorDescription)';
   }
 }
 
@@ -169,10 +169,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// null. The [package] argument must be non-null when the asset comes from a
   /// package and null otherwise.
   VideoPlayerController.asset(this.dataSource,
-      {this.package, this.closedCaptionFile})
-      : dataSourceType = DataSourceType.asset,
-        formatHint = null,
-        super(VideoPlayerValue(duration: null));
+    {this.package, this.closedCaptionFile})
+    : dataSourceType = DataSourceType.asset,
+      formatHint = null,
+      httpHeaders = null,
+      super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from obtained from
   /// the network.
@@ -182,21 +183,22 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-      {this.formatHint, this.closedCaptionFile, this.httpHeaders})
-      : dataSourceType = DataSourceType.network,
-        package = null,
-        super(VideoPlayerValue(duration: null));
+    {this.formatHint, this.closedCaptionFile, this.httpHeaders})
+    : dataSourceType = DataSourceType.network,
+      package = null,
+      super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from a file.
   ///
   /// This will load the file from the file-URI given by:
   /// `'file://${file.path}'`.
   VideoPlayerController.file(File file, {this.closedCaptionFile})
-      : dataSource = 'file://${file.path}',
-        dataSourceType = DataSourceType.file,
-        package = null,
-        formatHint = null,
-        super(VideoPlayerValue(duration: null));
+    : dataSource = 'file://${file.path}',
+      dataSourceType = DataSourceType.file,
+      package = null,
+      formatHint = null,
+      httpHeaders = null,
+      super(VideoPlayerValue(duration: null));
 
   int _textureId;
 
@@ -257,7 +259,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
-          httpHeaders: json.encode(httpHeaders),
+          httpHeaders: httpHeaders != null ? json.encode(httpHeaders) : null,
         );
         break;
       case DataSourceType.file:
@@ -322,8 +324,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
 
     _eventSubscription = _videoPlayerPlatform
-        .videoEventsFor(_textureId)
-        .listen(eventListener, onError: errorListener);
+      .videoEventsFor(_textureId)
+      .listen(eventListener, onError: errorListener);
     return initializingCompleter.future;
   }
 
@@ -381,7 +383,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       await _videoPlayerPlatform.play(_textureId);
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
-        (Timer timer) async {
+          (Timer timer) async {
           if (_isDisposed) {
             return;
           }
@@ -553,8 +555,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return _textureId == null
-        ? Container()
-        : _videoPlayerPlatform.buildView(_textureId);
+      ? Container()
+      : _videoPlayerPlatform.buildView(_textureId);
   }
 }
 
@@ -675,10 +677,10 @@ class VideoProgressIndicator extends StatefulWidget {
   /// to `top: 5.0`.
   VideoProgressIndicator(
     this.controller, {
-    VideoProgressColors colors,
-    this.allowScrubbing,
-    this.padding = const EdgeInsets.only(top: 5.0),
-  }) : colors = colors ?? VideoProgressColors();
+      VideoProgressColors colors,
+      this.allowScrubbing,
+      this.padding = const EdgeInsets.only(top: 5.0),
+    }) : colors = colors ?? VideoProgressColors();
 
   /// The [VideoPlayerController] that actually associates a video with this
   /// widget.
@@ -823,10 +825,10 @@ class ClosedCaption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextStyle effectiveTextStyle = textStyle ??
-        DefaultTextStyle.of(context).style.copyWith(
-              fontSize: 36.0,
-              color: Colors.white,
-            );
+      DefaultTextStyle.of(context).style.copyWith(
+        fontSize: 36.0,
+        color: Colors.white,
+      );
 
     if (text == null) {
       return SizedBox.shrink();
