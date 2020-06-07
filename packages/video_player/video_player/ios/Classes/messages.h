@@ -23,6 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, copy, nullable) NSString * packageName;
 @property(nonatomic, copy, nullable) NSString * formatHint;
 @property(nonatomic, copy, nullable) NSString * httpHeaders;
+@property(nonatomic, strong, nullable) NSNumber * maxCacheSize;
+@property(nonatomic, strong, nullable) NSNumber * maxFileSize;
 @end
 
 @interface FLTLoopingMessage : NSObject 

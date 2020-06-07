@@ -52,6 +52,14 @@ public class Messages {
     public String getHttpHeaders() { return httpHeaders; }
     public void setHttpHeaders(String setterArg) { this.httpHeaders = setterArg; }
 
+    private Long maxCacheSize;
+    public Long getMaxCacheSize() { return maxCacheSize; }
+    public void setMaxCacheSize(Long setterArg) { this.maxCacheSize = setterArg; }
+
+    private Long maxFileSize;
+    public Long getMaxFileSize() { return maxFileSize; }
+    public void setMaxFileSize(Long setterArg) { this.maxFileSize = setterArg; }
+
     HashMap toMap() {
       HashMap<String, Object> toMapResult = new HashMap<String, Object>();
       toMapResult.put("asset", asset);
@@ -59,6 +67,8 @@ public class Messages {
       toMapResult.put("packageName", packageName);
       toMapResult.put("formatHint", formatHint);
       toMapResult.put("httpHeaders", httpHeaders);
+      toMapResult.put("maxCacheSize", maxCacheSize);
+      toMapResult.put("maxFileSize", maxFileSize);
       return toMapResult;
     }
     static CreateMessage fromMap(HashMap map) {
@@ -68,6 +78,8 @@ public class Messages {
       fromMapResult.packageName = (String)map.get("packageName");
       fromMapResult.formatHint = (String)map.get("formatHint");
       fromMapResult.httpHeaders = (String)map.get("httpHeaders");
+      fromMapResult.maxCacheSize = (map.get("maxCacheSize") instanceof Integer) ? (Integer)map.get("maxCacheSize") : (Long)map.get("maxCacheSize");
+      fromMapResult.maxFileSize = (map.get("maxFileSize") instanceof Integer) ? (Integer)map.get("maxFileSize") : (Long)map.get("maxFileSize");
       return fromMapResult;
     }
   }

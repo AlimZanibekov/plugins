@@ -38,6 +38,8 @@ import com.google.android.exoplayer2.upstream.cache.SimpleCache;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
+
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -97,11 +99,11 @@ final class VideoPlayer {
       LeastRecentlyUsedCacheEvictor evictor = new LeastRecentlyUsedCacheEvictor(maxCacheSize);
 
       if (sDownloadCache == null) {
-        sDownloadCache = new SimpleCache(context.getCacheDir(),evictor);
+        sDownloadCache = new SimpleCache(new File(context.getCacheDir(), "media"), evictor);
       }
 
-      return new CacheDataSource(sDownloadCache, defaultDatasourceFactory.createDataSource(), new FileDataSource(),
-              new CacheDataSink(sDownloadCache, maxFileSize),
+      return new CacheDataSource(sDownloadCache, defaultDatasourceFactory.createDataSource(),
+              new FileDataSource(), new CacheDataSink(sDownloadCache, maxFileSize),
               CacheDataSource.FLAG_BLOCK_ON_CACHE | CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR, null);
     }
   }
@@ -112,6 +114,8 @@ final class VideoPlayer {
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
       Map<String, String> httpHeaders,
+      long maxCacheSize,
+      long maxFileSize,
       String formatHint) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
@@ -123,7 +127,7 @@ final class VideoPlayer {
 
     DataSource.Factory dataSourceFactory;
     if (isHTTP(uri)) {
-      dataSourceFactory = new CacheDataSourceFactory(context, httpHeaders, 100 * 1024 * 1024, 5 * 1024 * 1024);
+      dataSourceFactory = new CacheDataSourceFactory(context, httpHeaders, maxCacheSize, maxFileSize);
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }

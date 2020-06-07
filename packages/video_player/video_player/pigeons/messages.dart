@@ -25,6 +25,8 @@ class CreateMessage {
   String packageName;
   String formatHint;
   String httpHeaders;
+  int maxCacheSize;
+  int maxFileSize;
 }
 
 @HostApi()

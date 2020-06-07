@@ -141,7 +141,9 @@ class DataSource {
     this.formatHint,
     this.asset,
     this.package,
-    this.httpHeaders
+    this.httpHeaders,
+    this.maxCacheSize,
+    this.maxFileSize
   });
 
   /// The way in which the video was originally loaded.
@@ -168,6 +170,9 @@ class DataSource {
   final String package;
 
   final String httpHeaders;
+
+  final int maxCacheSize;
+  final int maxFileSize;
 }
 
 /// The way in which the video was originally loaded.

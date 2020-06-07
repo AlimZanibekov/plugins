@@ -26,6 +26,8 @@ class CreateMessage {
   String packageName;
   String formatHint;
   String httpHeaders;
+  int maxCacheSize;
+  int maxFileSize;
   // ignore: unused_element
   Map<dynamic, dynamic> _toMap() {
     final Map<dynamic, dynamic> pigeonMap = <dynamic, dynamic>{};
@@ -34,6 +36,8 @@ class CreateMessage {
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
     pigeonMap['httpHeaders'] = httpHeaders;
+    pigeonMap['maxCacheSize'] = maxCacheSize;
+    pigeonMap['maxFileSize'] = maxFileSize;
     return pigeonMap;
   }
   // ignore: unused_element
@@ -44,6 +48,8 @@ class CreateMessage {
     result.packageName = pigeonMap['packageName'];
     result.formatHint = pigeonMap['formatHint'];
     result.httpHeaders = pigeonMap['httpHeaders'];
+    result.maxCacheSize = pigeonMap['maxCacheSize'];
+    result.maxFileSize = pigeonMap['maxFileSize'];
     return result;
   }
 }

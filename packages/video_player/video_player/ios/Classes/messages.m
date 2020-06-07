@@ -80,10 +80,18 @@ static NSDictionary* wrapResult(NSDictionary *result, FlutterError *error) {
   if ((NSNull *)result.httpHeaders == [NSNull null]) {
     result.httpHeaders = nil;
   }
+  result.maxCacheSize = dict[@"maxCacheSize"];
+  if ((NSNull *)result.maxCacheSize == [NSNull null]) {
+    result.maxCacheSize = nil;
+  }
+  result.maxFileSize = dict[@"maxFileSize"];
+  if ((NSNull *)result.maxFileSize == [NSNull null]) {
+    result.maxFileSize = nil;
+  }
   return result;
 }
 -(NSDictionary*)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", (self.maxCacheSize ? self.maxCacheSize : [NSNull null]), @"maxCacheSize", (self.maxFileSize ? self.maxFileSize : [NSNull null]), @"maxFileSize", nil];
 }
 @end
 

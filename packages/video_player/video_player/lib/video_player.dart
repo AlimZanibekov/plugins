@@ -173,6 +173,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     : dataSourceType = DataSourceType.asset,
       formatHint = null,
       httpHeaders = null,
+      maxCacheSize = 0,
+      maxFileSize = 0,
       super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from obtained from
@@ -183,9 +185,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-    {this.formatHint, this.closedCaptionFile, this.httpHeaders})
+    {this.formatHint, this.closedCaptionFile, this.httpHeaders, this.maxCacheSize, this.maxFileSize})
     : dataSourceType = DataSourceType.network,
       package = null,
+      assert(maxCacheSize != null),
+      assert(maxFileSize != null),
       super(VideoPlayerValue(duration: null));
 
   /// Constructs a [VideoPlayerController] playing a video from a file.
@@ -198,6 +202,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       package = null,
       formatHint = null,
       httpHeaders = null,
+      maxCacheSize = 0,
+      maxFileSize = 0,
       super(VideoPlayerValue(duration: null));
 
   int _textureId;
@@ -219,6 +225,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
 
   final Map<String, String> httpHeaders;
+
+  final int maxFileSize;
+
+  final int maxCacheSize;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
@@ -260,6 +270,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           uri: dataSource,
           formatHint: formatHint,
           httpHeaders: httpHeaders != null ? json.encode(httpHeaders) : null,
+          maxFileSize: maxFileSize,
+          maxCacheSize: maxCacheSize
         );
         break;
       case DataSourceType.file:
