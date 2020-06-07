@@ -181,7 +181,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-      {this.formatHint, this.closedCaptionFile})
+      {this.formatHint, this.closedCaptionFile, this.httpHeaders})
       : dataSourceType = DataSourceType.network,
         package = null,
         super(VideoPlayerValue(duration: null));
@@ -213,6 +213,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
+
+
+  Map<String, String> httpHeaders;
 
   /// Optional field to specify a file containing the closed
   /// captioning.
@@ -253,6 +256,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           sourceType: DataSourceType.network,
           uri: dataSource,
           formatHint: formatHint,
+          httpHeaders: httpHeaders,
         );
         break;
       case DataSourceType.file:

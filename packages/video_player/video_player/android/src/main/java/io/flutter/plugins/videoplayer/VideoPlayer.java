@@ -61,6 +61,7 @@ final class VideoPlayer {
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       String dataSource,
+      Map<String, String> httpHeaders,
       String formatHint) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
@@ -79,6 +80,10 @@ final class VideoPlayer {
               DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
               DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
               true);
+
+      if (httpHeaders != null) {
+        httpDataSourceFactory.getDefaultRequestProperties().set(httpHeaders);
+      }
     } else {
       dataSourceFactory = new DefaultDataSourceFactory(context, "ExoPlayer");
     }
