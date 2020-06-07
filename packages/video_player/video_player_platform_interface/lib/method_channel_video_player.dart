@@ -33,14 +33,20 @@ class MethodChannelVideoPlayer extends VideoPlayerPlatform {
       case DataSourceType.asset:
         message.asset = dataSource.asset;
         message.packageName = dataSource.package;
+        message.maxFileSize = 0;
+        message.maxCacheSize = 0;
         break;
       case DataSourceType.network:
         message.uri = dataSource.uri;
         message.formatHint = _videoFormatStringMap[dataSource.formatHint];
         message.httpHeaders = dataSource.httpHeaders;
+        message.maxFileSize = dataSource.maxFileSize;
+        message.maxCacheSize = dataSource.maxCacheSize;
         break;
       case DataSourceType.file:
         message.uri = dataSource.uri;
+        message.maxFileSize = 0;
+        message.maxCacheSize = 0;
         break;
     }
 
