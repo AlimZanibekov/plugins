@@ -47,7 +47,7 @@ int64_t FLTCMTimeToMillis(CMTime time) {
 @property(nonatomic, readonly) bool isPlaying;
 @property(nonatomic) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
-- (instancetype)initWithURL:(NSURL*)url frameUpdater:(FLTFrameUpdater*)frameUpdater;
+- (instancetype)initWithURL:(NSURL*)url headers:(NSDictionary*)headers frameUpdater:(FLTFrameUpdater*)frameUpdater;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
@@ -63,7 +63,7 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 @implementation FLTVideoPlayer
 - (instancetype)initWithAsset:(NSString*)asset frameUpdater:(FLTFrameUpdater*)frameUpdater {
   NSString* path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
-  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater];
+  return [self initWithURL:[NSURL fileURLWithPath:path] headers:nil frameUpdater:frameUpdater];
 }
 
 - (void)addObservers:(AVPlayerItem*)item {
@@ -507,7 +507,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
     NSDictionary *headers;
-
     if (input.httpHeaders) {
       NSError *error;
       NSData *jsonData = [input.httpHeaders dataUsingEncoding:NSUTF8StringEncoding];
@@ -516,20 +515,27 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       if (!error && ![jsonObject isKindOfClass:[NSArray class]]) {
         headers = (NSDictionary *)jsonObject;
       }
+      NSLog(@"Error parsing JSON: %@", error);
     }
 
     if (input.maxCacheSize > 0 && input.maxFileSize > 0) {
-      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:[NSURL URLWithString:input.uri]];
-      [KTVHTTPCache downloadSetAdditionalHeaders:headers];
       long maxCacheSize = [input.maxCacheSize longValue];
       [KTVHTTPCache cacheSetMaxCacheLength:maxCacheSize];
+      NSURL *originalUrl = [NSURL URLWithString:input.uri];
+
+      NSMutableDictionary *headersWithHost = [headers mutableCopy];
+      headersWithHost[@"Host"] = [originalUrl host];
+      [KTVHTTPCache downloadSetAdditionalHeaders:headersWithHost];
+
+      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:originalUrl];
 
       player = [[FLTVideoPlayer alloc] initWithURL:proxyURL
-                                     frameUpdater:frameUpdater];
+                                       headers:nil
+                                       frameUpdater:frameUpdater];
     } else {
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                         headers: headers
-                                         frameUpdater:frameUpdater];
+                                       headers: headers
+                                       frameUpdater:frameUpdater];
     }
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
