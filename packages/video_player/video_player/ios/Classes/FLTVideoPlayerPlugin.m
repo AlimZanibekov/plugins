@@ -5,6 +5,7 @@
 #import "FLTVideoPlayerPlugin.h"
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
+#import <KTVHTTPCache/KTVHTTPCache.h>
 #import "messages.h"
 
 #if !__has_feature(objc_arc)
@@ -438,6 +439,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
 - (instancetype)initWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
+  [KTVHTTPCache proxyStart:nil];
   _registry = [registrar textures];
   _messenger = [registrar messenger];
   _registrar = registrar;
@@ -497,8 +499,31 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
-    player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                    frameUpdater:frameUpdater];
+    NSDictionary *headers;
+
+    if (input.httpHeaders) {
+      NSError *error;
+      NSData *jsonData = [input.httpHeaders dataUsingEncoding:NSUTF8StringEncoding];
+      id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
+
+      if (!error && ![jsonObject isKindOfClass:[NSArray class]]) {
+        headers = (NSDictionary *)jsonObject;
+      }
+    }
+
+    if (input.maxCacheSize > 0 && input.maxFileSize > 0) {
+      NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:[NSURL URLWithString:input.uri]];
+      [KTVHTTPCache downloadSetAdditionalHeaders:headers];
+      long maxCacheSize = [input.maxCacheSize longValue];
+      [KTVHTTPCache cacheSetMaxCacheLength:maxCacheSize];
+
+      player = [[FLTVideoPlayer alloc] initWithURL:proxyURL
+                                     frameUpdater:frameUpdater];
+    } else {
+      player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
+                                         headers: headers
+                                         frameUpdater:frameUpdater];
+    }
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
