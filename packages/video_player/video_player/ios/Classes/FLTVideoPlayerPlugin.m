@@ -515,7 +515,6 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       if (!error && ![jsonObject isKindOfClass:[NSArray class]]) {
         headers = (NSDictionary *)jsonObject;
       }
-      NSLog(@"Error parsing JSON: %@", error);
     }
 
     if (input.maxCacheSize > 0 && input.maxFileSize > 0) {
