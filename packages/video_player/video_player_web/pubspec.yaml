@@ -22,7 +22,7 @@ dependencies:
   video_player_platform_interface:
     git:
       url: https://github.com/AlimZanibekov/plugins.git
-      ref: add_videoplayer_cache
+      ref: videoplayer_headers_cache
       path: packages/video_player/video_player_platform_interface
 
 dev_dependencies:

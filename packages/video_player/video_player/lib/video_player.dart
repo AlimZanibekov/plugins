@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -12,15 +12,16 @@ import 'package:flutter/services.dart';
 import 'package:meta/meta.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
+import 'src/closed_caption_file.dart';
+
 export 'package:video_player_platform_interface/video_player_platform_interface.dart'
     show DurationRange, DataSourceType, VideoFormat, VideoPlayerOptions;
 
-import 'src/closed_caption_file.dart';
 export 'src/closed_caption_file.dart';
 
 final VideoPlayerPlatform _videoPlayerPlatform = VideoPlayerPlatform.instance
-  // This will clear all open videos on the platform when a full restart is
-  // performed.
+// This will clear all open videos on the platform when a full restart is
+// performed.
   ..init();
 
 /// The duration, current position, buffering state, error state and settings
@@ -192,7 +193,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// **Android only**: The [formatHint] option allows the caller to override
   /// the video format detection code.
   VideoPlayerController.network(this.dataSource,
-      {this.formatHint, this.closedCaptionFile, this.videoPlayerOptions})
+      {this.formatHint,
+      this.closedCaptionFile,
+      this.videoPlayerOptions,
+      this.maxCacheSize = 0,
+      this.maxFileSize = 0,
+      this.httpHeaders})
       : dataSourceType = DataSourceType.network,
         package = null,
         assert(maxCacheSize != null),
@@ -233,7 +239,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String package;
-
 
   final Map<String, String> httpHeaders;
 
@@ -277,13 +282,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         break;
       case DataSourceType.network:
         dataSourceDescription = DataSource(
-          sourceType: DataSourceType.network,
-          uri: dataSource,
-          formatHint: formatHint,
-          httpHeaders: httpHeaders != null ? json.encode(httpHeaders) : null,
-          maxFileSize: maxFileSize,
-          maxCacheSize: maxCacheSize
-        );
+            sourceType: DataSourceType.network,
+            uri: dataSource,
+            formatHint: formatHint,
+            httpHeaders: httpHeaders != null ? json.encode(httpHeaders) : null,
+            maxFileSize: maxFileSize,
+            maxCacheSize: maxCacheSize);
         break;
       case DataSourceType.file:
         dataSourceDescription = DataSource(
