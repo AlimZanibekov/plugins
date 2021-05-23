@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -47,7 +47,9 @@ int64_t FLTCMTimeToMillis(CMTime time) {
 @property(nonatomic, readonly) bool isPlaying;
 @property(nonatomic) bool isLooping;
 @property(nonatomic, readonly) bool isInitialized;
-- (instancetype)initWithURL:(NSURL*)url headers:(NSDictionary*)headers frameUpdater:(FLTFrameUpdater*)frameUpdater;
+- (instancetype)initWithURL:(NSURL*)url
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers;
 - (void)play;
 - (void)pause;
 - (void)setIsLooping:(bool)isLooping;
@@ -63,7 +65,7 @@ static void* playbackBufferFullContext = &playbackBufferFullContext;
 @implementation FLTVideoPlayer
 - (instancetype)initWithAsset:(NSString*)asset frameUpdater:(FLTFrameUpdater*)frameUpdater {
   NSString* path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
-  return [self initWithURL:[NSURL fileURLWithPath:path] headers:nil frameUpdater:frameUpdater];
+  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater httpHeaders:nil];
 }
 
 - (void)addObservers:(AVPlayerItem*)item {
@@ -163,15 +165,15 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   _displayLink.paused = YES;
 }
 
-- (instancetype)initWithURL:(NSURL*)url headers:(NSDictionary*)headers frameUpdater:(FLTFrameUpdater*)frameUpdater {
-  AVPlayerItem* item;
-  if (headers) {
-    AVURLAsset* asset = [AVURLAsset URLAssetWithURL:url
-                                    options:@{@"AVURLAssetHTTPHeaderFieldsKey" : headers}];
-    item = [AVPlayerItem playerItemWithAsset:asset];
-  } else {
-    item = [AVPlayerItem playerItemWithURL:url];
+- (instancetype)initWithURL:(NSURL*)url
+               frameUpdater:(FLTFrameUpdater*)frameUpdater
+                httpHeaders:(NSDictionary<NSString*, NSString*>*)headers {
+  NSDictionary<NSString*, id>* options = nil;
+  if (headers != nil && [headers count] != 0) {
+    options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
+  AVURLAsset* urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
+  AVPlayerItem* item = [AVPlayerItem playerItemWithAsset:urlAsset];
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
 }
 
@@ -400,7 +402,7 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
   }
 }
 
-- (void)onTextureUnregistered {
+- (void)onTextureUnregistered:(NSObject<FlutterTexture>*)texture {
   dispatch_async(dispatch_get_main_queue(), ^{
     [self dispose];
   });
@@ -530,18 +532,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
     player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
-    NSDictionary *headers;
+    NSDictionary<NSString*, NSString*> *headers;
     if (input.httpHeaders) {
-      NSError *error;
-      NSData *jsonData = [input.httpHeaders dataUsingEncoding:NSUTF8StringEncoding];
-      id jsonObject = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:&error];
-
-      if (!error && ![jsonObject isKindOfClass:[NSArray class]]) {
-        headers = (NSDictionary *)jsonObject;
-      }
+      headers = input.httpHeaders;
     }
 
-    if (input.maxCacheSize > 0 && input.maxFileSize > 0) {
+    if (input.maxCacheSize.intValue > 0 && input.maxFileSize.intValue > 0) {
       long maxCacheSize = [input.maxCacheSize longValue];
       [KTVHTTPCache cacheSetMaxCacheLength:maxCacheSize];
       NSURL *originalUrl = [NSURL URLWithString:input.uri];
@@ -553,12 +549,12 @@ static inline CGFloat radiansToDegrees(CGFloat radians) {
       NSURL *proxyURL = [KTVHTTPCache proxyURLWithOriginalURL:originalUrl];
 
       player = [[FLTVideoPlayer alloc] initWithURL:proxyURL
-                                       headers:nil
-                                       frameUpdater:frameUpdater];
+                                      frameUpdater:frameUpdater
+                                       httpHeaders:@{}];
     } else {
       player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
-                                       headers: headers
-                                       frameUpdater:frameUpdater];
+                                      frameUpdater:frameUpdater
+                                       httpHeaders:input.httpHeaders];
     }
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
